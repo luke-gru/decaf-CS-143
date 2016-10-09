@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /**
  * Function: Failure()
@@ -34,7 +35,7 @@ void Failure(const char *format, ...);
  * will print something similar to the following if ptr is NULL:
  *   *** Failure: Assertion failed: hashtable.cc, line 55:
  *       ptr != NULL
- */ 
+ */
 
 #define Assert(expr)  \
   ((expr) ? (void)0 : Failure("Assertion failed: %s, line %d:\n    %s", __FILE__, __LINE__, #expr))
@@ -47,7 +48,7 @@ void Failure(const char *format, ...);
  * key.  For example, the usage line shown above will only print a message
  * if the call is preceded by a call to SetDebugForKey("parser",true).
  * The function accepts printf arguments.  The provided main.cc parses
- * the command line to turn on debug flags. 
+ * the command line to turn on debug flags.
  */
 
 void PrintDebug(const char *key, const char *format, ...);
@@ -82,5 +83,7 @@ bool IsDebugOn(const char *key);
  */
 
 void ParseCommandLine(int argc, char *argv[]);
-     
+
+int htoi(char *);
+
 #endif

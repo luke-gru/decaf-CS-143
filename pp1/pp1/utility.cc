@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <vector>
+#include <limits.h>
 using std::vector;
 
 static vector<const char*> debugKeys;
@@ -16,7 +17,7 @@ static const int BufferSize = 2048;
 void Failure(const char *format, ...) {
   va_list args;
   char errbuf[BufferSize];
-  
+
   va_start(args, format);
   vsprintf(errbuf, format, args);
   va_end(args);
@@ -27,7 +28,7 @@ void Failure(const char *format, ...) {
 
 int IndexOf(const char *key) {
   for (unsigned int i = 0; i < debugKeys.size(); i++)
-    if (!strcmp(debugKeys[i], key)) 
+    if (!strcmp(debugKeys[i], key))
       return i;
 
   return -1;
@@ -51,7 +52,7 @@ void PrintDebug(const char *key, const char *format, ...) {
 
   if (!IsDebugOn(key))
      return;
-  
+
   va_start(args, format);
   vsprintf(buf, format, args);
   va_end(args);
@@ -61,7 +62,7 @@ void PrintDebug(const char *key, const char *format, ...) {
 void ParseCommandLine(int argc, char *argv[]) {
   if (argc == 1)
     return;
-  
+
   if (strcmp(argv[1], "-d") != 0) { // first arg is not -d
     printf("Incorrect Use:   ");
     for (int i = 1; i < argc; i++) printf("%s ", argv[i]);
@@ -74,3 +75,21 @@ void ParseCommandLine(int argc, char *argv[]) {
     SetDebugForKey(argv[i], true);
 }
 
+int htoi(char *s) {
+    int val = 0;
+    int x = 0;
+    if (s[x] == '0' && (s[x+1]=='x' || s[x+1]=='X')) x+=2;
+    while (s[x]) {
+        if (val > INT_MAX) {
+            return 0;
+        } else if (s[x] >= '0' && s[x] <='9') {
+            val = val * 16 + s[x] - '0';
+        } else if (s[x]>='A' && s[x] <='F') {
+            val = val * 16 + s[x] - 'A' + 10;
+        } else if(s[x]>='a' && s[x] <='f') {
+            val = val * 16 + s[x] - 'a' + 10;
+        } else return 0;
+        x++;
+    }
+    return val;
+}

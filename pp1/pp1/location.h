@@ -2,7 +2,7 @@
  * ----------------
  * This file just contains features relative to the location structure
  * used to record the lexical position of a token or symbol.  This file
- * establishes the cmoon definition for the yyltype structure, the global
+ * establishes the common definition for the yyltype structure, the global
  * variable yylloc, and a utility function to join locations you might
  * find handy at times.
  */
@@ -18,7 +18,7 @@ typedef struct yyltype
 {
     int timestamp;                 // you can ignore this field
     int first_line, first_column;
-    int last_line, last_column;      
+    int last_line, last_column;
     char *text;                    // you can also ignore this field
 } yyltype;
 

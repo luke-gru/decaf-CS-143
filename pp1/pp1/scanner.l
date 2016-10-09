@@ -31,19 +31,19 @@ YYSTYPE yylval;  // manually declared for pp1, later Yacc provides
  * This global variable is how we get position information about the token
  * just scanned to the client. (Operates similarly to yylval above)
  */
-struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
+struct yyltype yylloc; // manually declared for pp1, later Yacc provides
 
-/* Macro: YY_USER_ACTION 
+/* Macro: YY_USER_ACTION
  * ---------------------
  * This flex built-in macro can be defined to provide an action which is
  * always executed prior to any matched rule's action. Basically, it is
  * a way of having a piece of code common to all actions factored out to
- * this routine.  We already defined it for you and left the empty
+ * this routine. We already defined it for you and left the empty
  * function DoBeforeEachAction ready for your use as needed. It will
  * be called once for each pattern scanned from the file, before
  * executing its action.
  */
-static void DoBeforeEachAction(); 
+static void DoBeforeEachAction();
 #define YY_USER_ACTION DoBeforeEachAction();
 
 %}
@@ -52,14 +52,53 @@ static void DoBeforeEachAction();
   * input file. Here is where you set options for the scanner, define lex
   * states, and can set up definitions to give names to regular expressions
   * as a simple substitution mechanism that allows for more readable
-  * entries in the Rules section later. 
+  * entries in the Rules section later.
   */
+
+DIGIT [0-9]
+ID    [a-z][a-z0-9]*
+IDENT [a-zA-Z][a-zA-Z0-9_]*
+WHITESPACE [ \t\r\n]+
+BOOL true|false
+INT_DEC [0-9]+
+INT_HEX 0[xX][a-fA-F]+
+DOUBLE [0-9]+.[0-9]*([eE][+-]?[0-9]+)?
 
 
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
-  * %% markers which delimit the Rules section. 
-  */ 
+  * %% markers which delimit the Rules section.
+  */
+
+void { return T_Void; }
+int  { return T_Int; }
+double  { return T_Double; }
+bool  { return T_Bool; }
+string { return T_String; }
+class { return T_Class; }
+interface { return T_Interface; }
+null { return T_Null; }
+this { return T_This; }
+extends { return T_Extends; }
+implements { return T_Implements; }
+for { return T_For; }
+while { return T_While; }
+if { return T_If; }
+else { return T_Else; }
+return { return T_Return; }
+break { return T_Break; }
+new { return T_New; }
+NewArray { return T_NewArray; }
+Print { return T_Print; }
+ReadInteger { return T_ReadInteger; }
+ReadLine { return T_ReadLine; }
+
+{INT_DEC} { yylval.integerConstant = atoi(yytext); return T_IntConstant; }
+{INT_HEX} { yylval.integerConstant = htoi(yytext); return T_IntConstant; }
+{BOOL} { yylval.boolConstant = yytext; return T_BoolConstant; }
+{IDENT} { yylval.identifier = strndup(yytext, MaxIdentLen); return T_Identifier; }
+{WHITESPACE} { /* eat it */ }
+
 
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
