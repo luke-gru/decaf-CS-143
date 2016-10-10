@@ -12,6 +12,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include "scanner.h"
 #include "utility.h" // for PrintDebug()
 #include "errors.h"
@@ -61,7 +62,7 @@ IDENT [a-zA-Z][a-zA-Z0-9_]*
 WHITESPACE [ \t\r\n]+
 BOOL true|false
 INT_DEC [0-9]+
-INT_HEX 0[xX][a-fA-F]+
+INT_HEX 0[xX][0-9a-fA-F]+
 DOUBLE [0-9]+.[0-9]*([eE][+-]?[0-9]+)?
 
 
@@ -92,10 +93,18 @@ NewArray { return T_NewArray; }
 Print { return T_Print; }
 ReadInteger { return T_ReadInteger; }
 ReadLine { return T_ReadLine; }
+"[]"     { return T_Dims; }
+"="      { return T_Equal; }
+"!="     { return T_NotEqual; }
+"<="     { return T_LessEqual; }
+">="     { return T_GreaterEqual; }
+"&&"     { return T_And; }
+"||"     { return T_Or; }
 
-{INT_DEC} { yylval.integerConstant = atoi(yytext); return T_IntConstant; }
+{DOUBLE} { yylval.doubleConstant = strtod(yytext, NULL); return T_DoubleConstant; }
 {INT_HEX} { yylval.integerConstant = htoi(yytext); return T_IntConstant; }
-{BOOL} { yylval.boolConstant = yytext; return T_BoolConstant; }
+{INT_DEC} { yylval.integerConstant = atoi(yytext); return T_IntConstant; }
+{BOOL} { yylval.boolConstant = strcmp(yytext, "true") == 0 ? true : false; return T_BoolConstant; }
 {IDENT} { yylval.identifier = strndup(yytext, MaxIdentLen); return T_Identifier; }
 {WHITESPACE} { /* eat it */ }
 

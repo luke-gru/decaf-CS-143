@@ -56,4 +56,3 @@ inline yyltype Join(yyltype *firstPtr, yyltype *lastPtr)
 
 
 #endif
-
