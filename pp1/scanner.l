@@ -70,11 +70,10 @@ static void DoBeforeEachAction();
 DIGIT [0-9]
 ID    [a-z][a-z0-9]*
 IDENT [a-zA-Z][a-zA-Z0-9_]*
-WHITESPACE [ \t\r\n]+
 BOOL true|false
 INT_DEC [0-9]+
 INT_HEX 0[xX][0-9a-fA-F]+
-DOUBLE [0-9]+.[0-9]*([eE][+-]?[0-9]+)?
+DOUBLE [0-9]+\.[0-9]*([eE][+-]?[0-9]+)?
 OP [-+/*%=.,;!<>()[\]{}]
 BEG_STR (\"[^"\n]*)
 STRING ({BEG_STR}\")
@@ -102,8 +101,8 @@ END_COMMENT ("*/")
                 yy_push_state(COPY);
               }
             }
-[ ]+                   { /* ignore all spaces */  }
-<*>[\t]                { curColNum += TAB_SIZE - curColNum % TAB_SIZE + 1;}
+[ ]+                     { /* ignore all spaces */  }
+<*>[\t\r]                { curColNum += TAB_SIZE - curColNum % TAB_SIZE + 1;}
 
 void { return T_Void; }
 int  { return T_Int; }
@@ -128,7 +127,7 @@ Print { return T_Print; }
 ReadInteger { return T_ReadInteger; }
 ReadLine { return T_ReadLine; }
 "[]"     { return T_Dims; }
-"="      { return T_Equal; }
+"=="      { return T_Equal; }
 "!="     { return T_NotEqual; }
 "<="     { return T_LessEqual; }
 ">="     { return T_GreaterEqual; }
@@ -140,10 +139,17 @@ ReadLine { return T_ReadLine; }
 {INT_DEC} { yylval.integerConstant = atoi(yytext); return T_IntConstant; }
 {BOOL} { yylval.boolConstant = strcmp(yytext, "true") == 0 ? true : false; return T_BoolConstant; }
 {OP}   { return *yytext; }
-{IDENT} { yylval.identifier = strndup(yytext, MaxIdentLen); return T_Identifier; }
+{IDENT} {
+  if (strlen(yytext) > MaxIdentLen) {
+    ReportError::LongIdentifier(&yylloc, yytext);
+  }
+  yylval.identifier = strndup(yytext, MaxIdentLen); return T_Identifier;
+}
 {STRING} { yylval.stringConstant = strdup(yytext); return T_StringConstant; }
 {BEG_STR} { ReportError::UntermString(&yylloc, yytext); }
-{WHITESPACE} { /* eat it */ }
+
+ /* default rule (error) */
+. { ReportError::UnrecogChar(&yylloc, *yytext); }
 
 
 %%
