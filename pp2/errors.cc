@@ -12,7 +12,6 @@
 using namespace std;
 #include "scanner.h" // for GetLineNumbered
 
-
 int ReportError::numErrors = 0;
 
 void ReportError::UnderlineErrorInLine(const char *line, yyltype *pos) {
@@ -23,8 +22,8 @@ void ReportError::UnderlineErrorInLine(const char *line, yyltype *pos) {
     cerr << endl;
 }
 
- 
- 
+
+
 void ReportError::OutputError(yyltype *loc, string msg) {
     numErrors++;
     fflush(stdout); // make sure any buffered text has been output
@@ -40,7 +39,7 @@ void ReportError::OutputError(yyltype *loc, string msg) {
 void ReportError::Formatted(yyltype *loc, const char *format, ...) {
     va_list args;
     char errbuf[2048];
-    
+
     va_start(args, format);
     vsprintf(errbuf,format, args);
     va_end(args);
@@ -69,7 +68,7 @@ void ReportError::UnrecogChar(yyltype *loc, char ch) {
     s << "Unrecognized char: '" << ch << "'";
     OutputError(loc, s.str());
 }
-  
+
 /**
  * Function: yyerror()
  * -------------------
@@ -77,7 +76,7 @@ void ReportError::UnrecogChar(yyltype *loc, char ch) {
  * just calls into the error reporter above, passing the location of
  * the last token read. If you want to suppress the ordinary "parse error"
  * message from yacc, you can implement yyerror to do nothing and
- * then call ReportError::Formatted yourself with a more descriptive 
+ * then call ReportError::Formatted yourself with a more descriptive
  * message.
  */
 

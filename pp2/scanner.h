@@ -19,5 +19,5 @@ int yylex();              // Defined in the generated lex.yy.c file
 
 void InitScanner();                 // Defined in scanner.l user subroutines
 const char *GetLineNumbered(int n); // ditto
- 
+
 #endif
