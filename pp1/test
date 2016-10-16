@@ -8,7 +8,7 @@ do
   output=$(cat "$file" | ./dcc 2>&1)
   echo "$output" > "$file".testout
   expected_file=$(echo "$file" | sed s/\.frag/\.out/)
-  diff_res=$(diff -b "$expected_file" "$file".testout)
+  diff_res=$(diff -b -B "$expected_file" "$file".testout)
   if [[ -z "${diff_res//}" ]]; then
     echo "Pass"
     let passes=$passes+1
@@ -18,7 +18,7 @@ do
     echo "** Fail **"
     echo "Diff:"
     echo "----"
-    echo $diff_res
+    echo "$diff_res"
     echo "----"
   fi
 done

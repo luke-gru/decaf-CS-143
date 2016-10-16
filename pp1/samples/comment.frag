@@ -1,9 +1,9 @@
 // this file should only generate the last line as output.
 // here is a comment
 /* here is a simple comment */
-/* here 
-is 
-a 
+/* here
+is
+a
 multi-line
 comment
 */

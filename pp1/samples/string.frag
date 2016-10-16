@@ -3,7 +3,7 @@
 "valid"
 
 ""
- 
+
 " "
 
 "white space can exist in strings"

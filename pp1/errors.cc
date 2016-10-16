@@ -14,7 +14,7 @@ using namespace std;
 
 int ReportError::numErrors = 0;
 
- 
+
 void ReportError::OutputError(yyltype *loc, string msg) {
     numErrors++;
     fflush(stdout); // make sure any buffered text has been output
@@ -29,7 +29,7 @@ void ReportError::OutputError(yyltype *loc, string msg) {
 void ReportError::Formatted(yyltype *loc, const char *format, ...) {
     va_list args;
     char errbuf[2048];
-    
+
     va_start(args, format);
     vsprintf(errbuf,format, args);
     va_end(args);

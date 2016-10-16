@@ -79,6 +79,7 @@ BEG_STR (\"[^"\n]*)
 STRING ({BEG_STR}\")
 BEG_COMMENT ("/*")
 END_COMMENT ("*/")
+SINGLE_COMMENT ("//"[^\n]*)
 
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
@@ -102,7 +103,16 @@ END_COMMENT ("*/")
               }
             }
 [ ]+                     { /* ignore all spaces */  }
-<*>[\t\r]                { curColNum += TAB_SIZE - curColNum % TAB_SIZE + 1;}
+<*>[\t\r]                { curColNum += TAB_SIZE - curColNum % TAB_SIZE + 1; }
+
+ /* comments */
+{BEG_COMMENT} { BEGIN(COMM); }
+<COMM>{END_COMMENT} { BEGIN(N); }
+<COMM><<EOF>> { ReportError::UntermComment(); return 0; }
+<COMM>. { /* ignore */ }
+{SINGLE_COMMENT} { /* skip to the end of the line */ }
+
+ /* keywords */
 
 void { return T_Void; }
 int  { return T_Int; }
