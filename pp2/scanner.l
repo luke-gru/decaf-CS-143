@@ -35,7 +35,9 @@ using namespace std;
  * This global variable is how we get position information about the token
  * just scanned to the client. (Operates similarly to yylval above)
  */
-//struct yyltype yylloc; // manually declared for pp1, later Yacc provides
+#ifdef YYBISON
+struct yyltype yylloc; // manually declared for pp1, later Yacc provides
+#endif
 
 static int curLineNum, curColNum;
 vector<const char*> savedLines;
