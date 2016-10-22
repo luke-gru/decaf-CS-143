@@ -155,17 +155,17 @@ Type     : T_Int { $$ = Type::intType; }
          | Type T_Dims { $$ = new ArrayType(@1, $1); }
          ;
 
-FunctionDecl  : Type T_Identifier '(' Formals ')' StmtBlockNonEmpty { FnDecl *decl = new FnDecl(new Identifier(@2, $2), $1, $4); decl->SetFunctionBody($6); $$ = decl; }
-              | T_Void T_Identifier '(' Formals ')' StmtBlockNonEmpty { FnDecl *decl = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); decl->SetFunctionBody($6); $$ = decl; }
+FunctionDecl  : Type T_Identifier '(' Formals ')' StmtBlock { FnDecl *decl = new FnDecl(new Identifier(@2, $2), $1, $4); decl->SetFunctionBody($6); $$ = decl; }
+              | T_Void T_Identifier '(' Formals ')' StmtBlock { FnDecl *decl = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); decl->SetFunctionBody($6); $$ = decl; }
               ;
 
 Formals   : Variable { ($$ = new List<VarDecl*>)->Append($1); }
-          | Formals Variable { $$->Append($2); }
+          | Formals ',' Variable { ($$=$1)->Append($3); }
           | /* empty */ { $$ = new List<VarDecl*>(); }
           ;
 
 ClassDecl : T_Class T_Identifier ExtendsClass '{' Fields '}' { $$ = new ClassDecl(new Identifier(@2, $2), $3, new List<NamedType*>(), $5); }
-          | T_Class T_Identifier ExtendsClass ImplementsInterface '{' Fields '}' {}
+          | T_Class T_Identifier ExtendsClass ImplementsInterface '{' Fields '}' { $$ = new ClassDecl(new Identifier(@2, $2), $3, $4, $6); }
           ;
 
 ExtendsClass : T_Extends T_Identifier { $$ = new NamedType(new Identifier(@2, $2)); }
@@ -173,7 +173,7 @@ ExtendsClass : T_Extends T_Identifier { $$ = new NamedType(new Identifier(@2, $2
              ;
 
 ImplementsInterface : T_Implements T_Identifier { ($$ = new List<NamedType*>())->Append(new NamedType(new Identifier(@2, $2))); }
-                    | ImplementsInterface ',' T_Implements T_Identifier { $$->Append(new NamedType(new Identifier(@4, $4))); }
+                    | ImplementsInterface ',' T_Implements T_Identifier { ($$=$1)->Append(new NamedType(new Identifier(@4, $4))); }
                     ;
 
 Fields : Field { ($$ = new List<Decl*>)->Append($1); }
@@ -189,7 +189,7 @@ InterfaceDecl : T_Interface T_Identifier '{' Prototypes '}' { $$ = new Interface
               ;
 
 Prototypes : Prototype { ($$ = new List<Decl*>)->Append($1); }
-           | Prototypes Prototype { $$->Append($2); }
+           | Prototypes Prototype { ($$=$1)->Append($2); }
            | /* empty */ { $$ = new List<Decl*>(); }
            ;
 
@@ -197,9 +197,9 @@ Prototype : Type T_Identifier '(' Formals ')' ';' { $$ = new FnDecl(new Identifi
           | T_Void T_Identifier '(' Formals ')' ';' { $$ = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); }
           ;
 
-StmtBlock : VariableDecls Stmts { $$ = new StmtBlock($1, $2); }
-          | Stmts { $$ = new StmtBlock(new List<VarDecl*>(), $1); }
-          | /* empty */ { $$ = new StmtBlock(new List<VarDecl*>(), new List<Stmt*>()); }
+StmtBlock : '{' VariableDecls Stmts '}' { $$ = new StmtBlock($2, $3); }
+          | '{' Stmts '}' { $$ = new StmtBlock(new List<VarDecl*>(), $2); }
+          | '{' '}' /* empty */ { $$ = new StmtBlock(new List<VarDecl*>(), new List<Stmt*>()); }
           ;
 
 StmtBlockNonEmpty : '{' VariableDecls Stmts '}' { $$ = new StmtBlock($2, $3); }
@@ -292,7 +292,7 @@ Call : T_Identifier '(' Actuals ')' { $$ = new Call(@1, NULL, new Identifier(@1,
      ;
 
 Actuals : Expr { ($$ = new List<Expr*>())->Append($1); }
-        | Actuals Expr { ($$=$1)->Append($2); }
+        | Actuals ',' Expr { ($$=$1)->Append($3); }
         | /* empty */ { $$ = new List<Expr*>(); }
         ;
 
