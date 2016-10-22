@@ -97,11 +97,15 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <type>      Type
 %type <stmt>      Stmt IfStmt ElseStmt WhileStmt ForStmt ReturnStmt PrintStmt BreakStmt
 %type <stmtList>  Stmts
-%type <stmtBlock> StmtBlock
+%type <stmtBlock> StmtBlock StmtBlockNonEmpty
 %type <namedType> ExtendsClass
 %type <namedTypeList> ImplementsInterface
 %type <expr> Expr LValue Constant Call
 %type <exprList> Args Actuals
+
+%left '<' '>' '=' "!=" "<=" ">="
+%left '+' '-'
+%left '*' '/'
 
 %%
 /* Rules
@@ -145,8 +149,8 @@ Type     : T_Int { $$ = Type::intType; }
          | Type T_Dims { $$ = new ArrayType(@1, $1); }
          ;
 
-FunctionDecl  : Type T_Identifier '(' Formals ')' StmtBlock { FnDecl *decl = new FnDecl(new Identifier(@2, $2), $1, $4); decl->SetFunctionBody($6); $$ = decl; }
-              | T_Void T_Identifier '(' Formals ')' StmtBlock { FnDecl *decl = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); decl->SetFunctionBody($6); $$ = decl; }
+FunctionDecl  : Type T_Identifier '(' Formals ')' StmtBlockNonEmpty { FnDecl *decl = new FnDecl(new Identifier(@2, $2), $1, $4); decl->SetFunctionBody($6); $$ = decl; }
+              | T_Void T_Identifier '(' Formals ')' StmtBlockNonEmpty { FnDecl *decl = new FnDecl(new Identifier(@2, $2), Type::voidType, $4); decl->SetFunctionBody($6); $$ = decl; }
               ;
 
 Formals   : Variable { ($$ = new List<VarDecl*>)->Append($1); }
@@ -167,7 +171,7 @@ ImplementsInterface : T_Implements T_Identifier { ($$ = new List<NamedType*>())-
                     ;
 
 Fields : Field { ($$ = new List<Decl*>)->Append($1); }
-       | Fields Field { $$->Append($2); }
+       | Fields Field { ($$=$1)->Append($2); }
        | /* empty */ { $$ = new List<Decl*>(); }
        ;
 
@@ -192,12 +196,16 @@ StmtBlock : VariableDecls Stmts { $$ = new StmtBlock($1, $2); }
           | /* empty */ { $$ = new StmtBlock(new List<VarDecl*>(), new List<Stmt*>()); }
           ;
 
+StmtBlockNonEmpty : '{' VariableDecls Stmts '}' { $$ = new StmtBlock($2, $3); }
+                  | '{' Stmts '}' { $$ = new StmtBlock(new List<VarDecl*>(), $2); }
+                  ;
+
 VariableDecls : VariableDecl { ($$ = new List<VarDecl*>())->Append($1); }
               | VariableDecls VariableDecl { ($$=$1)->Append($2); }
               ;
 
 Stmts : Stmt { ($$ = new List<Stmt*>)->Append($1); }
-      | Stmts Stmt { $$->Append($2); }
+      | Stmts Stmt { ($$=$1)->Append($2); }
       ;
 
 Stmt : ';' { $$ = NULL; }
@@ -208,7 +216,7 @@ Stmt : ';' { $$ = NULL; }
      | BreakStmt { $$ = $1; }
      | ReturnStmt { $$ = $1; }
      | PrintStmt { $$ = $1; }
-     | StmtBlock { $$ = $1; }
+     | StmtBlockNonEmpty { $$ = $1; }
      ;
 
 IfStmt : T_If '(' Expr ')' Stmt ElseStmt { $$ = new IfStmt($3, $5, $6); }
@@ -235,7 +243,7 @@ PrintStmt : T_Print '(' Args ')' ';' { $$ = new PrintStmt($3); }
           ;
 
 Args : Expr { ($$ = new List<Expr*>())->Append($1); }
-     | Args ',' Expr { ($$ = $1)->Append($3); }
+     | Args ',' Expr { ($$=$1)->Append($3); }
      ;
 
 Expr : LValue '=' Expr { $$ = new AssignExpr($1, new Operator(@2, "="), $3); }

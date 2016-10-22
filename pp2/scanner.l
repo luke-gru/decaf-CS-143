@@ -28,7 +28,6 @@ using namespace std;
  * future, this variable will be declared for us in the y.tab.c file
  * produced by Yacc, but for now, we declare it manually.
  */
-//YYSTYPE yylval;  // manually declared for pp1, later Yacc provides
 
 /* Global variable: yylloc
  * -----------------------
@@ -36,7 +35,8 @@ using namespace std;
  * just scanned to the client. (Operates similarly to yylval above)
  */
 #ifdef YYBISON
-struct yyltype yylloc; // manually declared for pp1, later Yacc provides
+//YYSTYPE yylval;  // manually declared for pp1, later Yacc provides
+//struct yyltype yylloc; // manually declared for pp1, later Yacc provides
 #endif
 
 static int curLineNum, curColNum;
@@ -211,5 +211,5 @@ static void DoBeforeEachAction()
 
 
 const char *GetLineNumbered(int n) {
-  return savedLines[n];
+  return savedLines[n-1];
 }

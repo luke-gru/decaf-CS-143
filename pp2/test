@@ -1,0 +1,34 @@
+#!/bin/bash
+let failures=0
+let passes=0
+declare -a fail_files=();
+for file in samples/*.decaf
+do
+  echo "Testing $file"
+  output=$(cat "$file" | ./dcc 2>&1)
+  echo "$output" > "$file".testout
+  expected_file=$(echo "$file" | sed s/\.decaf/\.out/)
+  diff_res=$(diff -w -B "$expected_file" "$file".testout)
+  if [[ -z "${diff_res//}" ]]; then
+    echo "Pass"
+    let passes=$passes+1
+  else
+    let failures=$failures+1
+    fail_files=("${fail_files[@]}" "$file")
+    echo "** Fail **"
+    echo "Diff:"
+    echo "----"
+    echo "$diff_res"
+    echo "----"
+  fi
+done
+
+rm samples/*.testout
+echo "$passes passed, $failures failed"
+if [[ $failures -eq 0 ]]; then
+  echo "All passed"
+  exit 0
+else
+  echo "Failed files: ${fail_files[@]}"
+  exit 1
+fi
