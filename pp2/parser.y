@@ -103,9 +103,15 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <expr> Expr LValue Constant Call
 %type <exprList> Args Actuals
 
-%left '<' '>' '=' "!=" "<=" ">="
+%left '='
+%left T_Or
+%left T_And
+%left T_Equal T_NotEqual
+%left '<' T_LessEqual '>' T_GreaterEqual
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
+%right UNOT UMINUS
+%left '[' '.'
 
 %%
 /* Rules
@@ -230,10 +236,13 @@ WhileStmt : T_While '(' Expr ')' Stmt { $$ = new WhileStmt($3, $5); }
           ;
 
 ForStmt : T_For '(' Expr ';' Expr ';' Expr ')' Stmt { $$ = new ForStmt($3, $5, $7, $9); }
+        | T_For '(' ';' Expr ';' Expr ')' Stmt { $$ = new ForStmt(new EmptyExpr(), $4, $6, $8); }
+        | T_For '(' Expr ';' ';' Expr ')' Stmt { $$ = new ForStmt($3, new EmptyExpr(), $6, $8); }
+        | T_For '(' ';' ';' Expr ')' Stmt { $$ = new ForStmt(new EmptyExpr(), new EmptyExpr(), $5, $7); }
         ;
 
 ReturnStmt : T_Return Expr ';' { $$ = new ReturnStmt(@1, $2); }
-           | T_Return ';' { $$ = new ReturnStmt(@1, NULL); }
+           | T_Return ';' { $$ = new ReturnStmt(@1, new EmptyExpr()); }
            ;
 
 BreakStmt : T_Break ';' { $$ = new BreakStmt(@1); }
@@ -257,16 +266,16 @@ Expr : LValue '=' Expr { $$ = new AssignExpr($1, new Operator(@2, "="), $3); }
      | Expr '*' Expr { $$ = new ArithmeticExpr($1, new Operator(@2, "*"), $3); }
      | Expr '/' Expr { $$ = new ArithmeticExpr($1, new Operator(@2, "/"), $3); }
      | Expr '%' Expr { $$ = new ArithmeticExpr($1, new Operator(@2, "%"), $3); }
-     | '-' Expr { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
+     | '-' Expr %prec UMINUS { $$ = new ArithmeticExpr(new Operator(@1, "-"), $2); }
      | Expr '<' Expr { $$ = new RelationalExpr($1, new Operator(@2, "<"), $3); }
      | Expr T_LessEqual Expr { $$ = new RelationalExpr($1, new Operator(@2, "<="), $3); }
      | Expr '>' Expr { $$ = new RelationalExpr($1, new Operator(@2, ">"), $3); }
      | Expr T_GreaterEqual Expr { $$ = new RelationalExpr($1, new Operator(@2, ">="), $3); }
-     | Expr T_Equal Expr { $$ = new LogicalExpr($1, new Operator(@2, "=="), $3); }
-     | Expr T_NotEqual Expr { $$ = new LogicalExpr($1, new Operator(@2, "!="), $3); }
+     | Expr T_Equal Expr { $$ = new EqualityExpr($1, new Operator(@2, "=="), $3); }
+     | Expr T_NotEqual Expr { $$ = new EqualityExpr($1, new Operator(@2, "!="), $3); }
      | Expr T_And Expr { $$ = new LogicalExpr($1, new Operator(@2, "&&"), $3); }
      | Expr T_Or Expr { $$ = new LogicalExpr($1, new Operator(@2, "||"), $3); }
-     | '!' Expr { $$ = new LogicalExpr(new Operator(@1, "!"), $2); }
+     | '!' Expr %prec UNOT { $$ = new LogicalExpr(new Operator(@1, "!"), $2); }
      | T_ReadInteger '(' ')' { $$ = new ReadIntegerExpr(@1); }
      | T_ReadLine '(' ')' { $$ = new ReadLineExpr(@1); }
      | T_New T_Identifier { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }
