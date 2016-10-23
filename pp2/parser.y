@@ -73,6 +73,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %token   T_While T_For T_If T_Else T_Return T_Break
 %token   T_New T_NewArray T_Print T_ReadInteger T_ReadLine
 %token   T_Switch T_Case T_Default
+%token   T_PP T_MM
 
 %token   <identifier> T_Identifier
 %token   <stringConstant> T_StringConstant
@@ -108,12 +109,14 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <defaultCase> DefaultCase
 %type <switchCases> SwitchCases
 
+/* precedence (low to high) */
 %left '='
 %left T_Or
 %left T_And
 %left T_Equal T_NotEqual
 %left '<' T_LessEqual '>' T_GreaterEqual
 %left '+' '-'
+%right T_PP T_MM
 %left '*' '/' '%'
 %right UNOT UMINUS
 %left '[' '.'
@@ -297,6 +300,8 @@ Expr : LValue '=' Expr { $$ = new AssignExpr($1, new Operator(@2, "="), $3); }
      | Expr T_And Expr { $$ = new LogicalExpr($1, new Operator(@2, "&&"), $3); }
      | Expr T_Or Expr { $$ = new LogicalExpr($1, new Operator(@2, "||"), $3); }
      | '!' Expr %prec UNOT { $$ = new LogicalExpr(new Operator(@1, "!"), $2); }
+     | Expr T_PP { $$ = new PostfixExpr(new Operator(@2, "++"), $1); }
+     | Expr T_MM { $$ = new PostfixExpr(new Operator(@2, "--"), $1); }
      | T_ReadInteger '(' ')' { $$ = new ReadIntegerExpr(@1); }
      | T_ReadLine '(' ')' { $$ = new ReadLineExpr(@1); }
      | T_New T_Identifier { $$ = new NewExpr(@1, new NamedType(new Identifier(@2, $2))); }

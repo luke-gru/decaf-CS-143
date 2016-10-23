@@ -149,6 +149,8 @@ ReadLine { return T_ReadLine; }
 ">="     { return T_GreaterEqual; }
 "&&"     { return T_And; }
 "||"     { return T_Or; }
+"++"     { return T_PP; }
+"--"     { return T_MM; }
 
 {DOUBLE} { yylval.doubleConstant = strtod(yytext, NULL); return T_DoubleConstant; }
 {INT_HEX} { yylval.integerConstant = htoi(yytext); return T_IntConstant; }

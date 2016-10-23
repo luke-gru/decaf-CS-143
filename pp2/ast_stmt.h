@@ -108,7 +108,7 @@ class SwitchStmt : public Stmt
     SwitchCase *defaultCase;
   public:
     SwitchStmt(Expr *e, List<SwitchCase*> *c, SwitchCase *defaultCase);
-    const char *GetPrintNameForNode() { return "Switch"; }
+    const char *GetPrintNameForNode() { return "SwitchStmt"; }
     void PrintChildren(int indentLevel);
 };
 
@@ -122,7 +122,7 @@ class SwitchCase : public Node
     bool isDefault;
   public:
     SwitchCase(IntConstant *test, List<Stmt*> *stmts, bool isDefault);
-    const char *GetPrintNameForNode() { return "Case"; }
+    const char *GetPrintNameForNode() { return isDefault ?  "Default" : "Case"; }
     void PrintChildren(int indentLevel);
 };
 

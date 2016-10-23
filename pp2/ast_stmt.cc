@@ -78,7 +78,7 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1);
     cases->PrintAll(indentLevel+1);
     if (defaultCase) {
-        defaultCase->Print(indentLevel+1, "(default) ");
+        defaultCase->Print(indentLevel+1);
     }
 }
 
@@ -89,7 +89,9 @@ SwitchCase::SwitchCase(IntConstant *c, List<Stmt*> *stmtsList, bool isDefaultCas
 }
 
 void SwitchCase::PrintChildren(int indentLevel) {
-    test->Print(indentLevel+1);
+    if (!isDefault) {
+        test->Print(indentLevel+1);
+    }
     stmts->PrintAll(indentLevel+1);
 }
 
