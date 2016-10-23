@@ -56,6 +56,8 @@ void yyerror(const char *msg); // standard error-handling routine
     List<NamedType*> *namedTypeList;
     Expr *expr;
     List<Expr*> *exprList;
+    SwitchCase *defaultCase;
+    List<SwitchCase*> *switchCases;
 }
 
 
@@ -70,6 +72,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %token   T_And T_Or T_Null T_Extends T_This T_Interface T_Implements
 %token   T_While T_For T_If T_Else T_Return T_Break
 %token   T_New T_NewArray T_Print T_ReadInteger T_ReadLine
+%token   T_Switch T_Case T_Default
 
 %token   <identifier> T_Identifier
 %token   <stringConstant> T_StringConstant
@@ -95,13 +98,15 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <varDecl>   Variable VariableDecl
 %type <decl>      FunctionDecl ClassDecl InterfaceDecl Prototype
 %type <type>      Type
-%type <stmt>      Stmt IfStmt ElseStmt WhileStmt ForStmt ReturnStmt PrintStmt BreakStmt
-%type <stmtList>  Stmts
+%type <stmt>      Stmt IfStmt ElseStmt WhileStmt ForStmt ReturnStmt PrintStmt BreakStmt SwitchStmt
+%type <stmtList>  Stmts MaybeStmts
 %type <stmtBlock> StmtBlock StmtBlockNonEmpty
 %type <namedType> ExtendsClass
 %type <namedTypeList> ImplementsInterface
 %type <expr> Expr LValue Constant Call
 %type <exprList> Args Actuals
+%type <defaultCase> DefaultCase
+%type <switchCases> SwitchCases
 
 %left '='
 %left T_Or
@@ -214,6 +219,10 @@ Stmts : Stmt { ($$ = new List<Stmt*>)->Append($1); }
       | Stmts Stmt { ($$=$1)->Append($2); }
       ;
 
+MaybeStmts : Stmts { $$ = $1; }
+           | /* empty */ { $$ = new List<Stmt*>(); }
+           ;
+
 Stmt : ';' { $$ = NULL; }
      | Expr ';' { $$ = static_cast<Stmt*>($1); }
      | IfStmt { $$ = $1; }
@@ -223,6 +232,7 @@ Stmt : ';' { $$ = NULL; }
      | ReturnStmt { $$ = $1; }
      | PrintStmt { $$ = $1; }
      | StmtBlockNonEmpty { $$ = $1; }
+     | SwitchStmt { $$ = $1; }
      ;
 
 IfStmt : T_If '(' Expr ')' Stmt ElseStmt { $$ = new IfStmt($3, $5, $6); }
@@ -250,6 +260,17 @@ BreakStmt : T_Break ';' { $$ = new BreakStmt(@1); }
 
 PrintStmt : T_Print '(' Args ')' ';' { $$ = new PrintStmt($3); }
           ;
+
+SwitchStmt : T_Switch '(' Expr ')' '{' SwitchCases DefaultCase '}' { $$ = new SwitchStmt($3, $6, $7); }
+           ;
+
+SwitchCases : T_Case T_IntConstant ':' MaybeStmts { ($$ = new List<SwitchCase*>())->Append(new SwitchCase(new IntConstant(@2, $2), $4, false)); }
+            | SwitchCases T_Case T_IntConstant ':' MaybeStmts { ($$=$1)->Append(new SwitchCase(new IntConstant(@3, $3), $5, false)); }
+            ;
+
+DefaultCase : T_Default ':' Stmts { $$ = new SwitchCase(new IntConstant(@1, 0), $3, true); }
+            | /* empty */ { $$ = NULL; }
+            ;
 
 Args : Expr { ($$ = new List<Expr*>())->Append($1); }
      | Args ',' Expr { ($$=$1)->Append($3); }

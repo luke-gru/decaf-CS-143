@@ -98,6 +98,34 @@ class IfStmt : public ConditionalStmt
     void PrintChildren(int indentLevel);
 };
 
+class SwitchCase;
+
+class SwitchStmt : public Stmt
+{
+  protected:
+    Expr *test;
+    List<SwitchCase*> *cases;
+    SwitchCase *defaultCase;
+  public:
+    SwitchStmt(Expr *e, List<SwitchCase*> *c, SwitchCase *defaultCase);
+    const char *GetPrintNameForNode() { return "Switch"; }
+    void PrintChildren(int indentLevel);
+};
+
+class IntConstant;
+
+class SwitchCase : public Node
+{
+  protected:
+    IntConstant *test;
+    List<Stmt*> *stmts;
+    bool isDefault;
+  public:
+    SwitchCase(IntConstant *test, List<Stmt*> *stmts, bool isDefault);
+    const char *GetPrintNameForNode() { return "Case"; }
+    void PrintChildren(int indentLevel);
+};
+
 class BreakStmt : public Stmt
 {
   public:

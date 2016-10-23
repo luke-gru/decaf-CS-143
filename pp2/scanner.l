@@ -77,7 +77,7 @@ BOOL true|false
 INT_DEC [0-9]+
 INT_HEX 0[xX][0-9a-fA-F]+
 DOUBLE [0-9]+\.[0-9]*([eE][+-]?[0-9]+)?
-OP [-+/*%=.,;!<>()[\]{}]
+OP [-+/*%=.,;!<>()[\]{}:]
 BEG_STR (\"[^"\n]*)
 STRING ({BEG_STR}\")
 BEG_COMMENT ("/*")
@@ -128,6 +128,9 @@ null { return T_Null; }
 this { return T_This; }
 extends { return T_Extends; }
 implements { return T_Implements; }
+switch { return T_Switch; }
+case { return T_Case; }
+default { return T_Default; }
 for { return T_For; }
 while { return T_While; }
 if { return T_If; }
