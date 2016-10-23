@@ -4,10 +4,6 @@
  * manage declarations. There are 4 subclasses of the base class,
  * specialized for declarations of variables, functions, classes,
  * and interfaces.
- *
- * pp3: You will need to extend the Decl classes to implement 
- * semantic processing including detection of declaration conflicts 
- * and managing scoping issues.
  */
 
 #ifndef _H_ast_decl
@@ -21,26 +17,27 @@ class NamedType;
 class Identifier;
 class Stmt;
 
-class Decl : public Node 
+class Decl : public Node
 {
   protected:
     Identifier *id;
-  
+
   public:
     Decl(Identifier *name);
-    friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
-class VarDecl : public Decl 
+class VarDecl : public Decl
 {
   protected:
     Type *type;
-    
+
   public:
     VarDecl(Identifier *name, Type *type);
+    const char *GetPrintNameForNode() { return "VarDecl"; }
+    void PrintChildren(int indentLevel);
 };
 
-class ClassDecl : public Decl 
+class ClassDecl : public Decl
 {
   protected:
     List<Decl*> *members;
@@ -48,29 +45,35 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
 
   public:
-    ClassDecl(Identifier *name, NamedType *extends, 
+    ClassDecl(Identifier *name, NamedType *extends,
               List<NamedType*> *implements, List<Decl*> *members);
+    const char *GetPrintNameForNode() { return "ClassDecl"; }
+    void PrintChildren(int indentLevel);
 };
 
-class InterfaceDecl : public Decl 
+class InterfaceDecl : public Decl
 {
   protected:
     List<Decl*> *members;
-    
+
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
+    const char *GetPrintNameForNode() { return "InterfaceDecl"; }
+    void PrintChildren(int indentLevel);
 };
 
-class FnDecl : public Decl 
+class FnDecl : public Decl
 {
   protected:
     List<VarDecl*> *formals;
     Type *returnType;
     Stmt *body;
-    
+
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    const char *GetPrintNameForNode() { return "FnDecl"; }
+    void PrintChildren(int indentLevel);
 };
 
 #endif
