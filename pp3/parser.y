@@ -129,13 +129,9 @@ void yyerror(const char *msg); // standard error-handling routine
 
  */
 Program   :    DeclList            {
-                                      /* pp2: The @1 is needed to convince
-                                       * yacc to set up yylloc. You can remove
-                                       * it once you have other uses of @n*/
                                       Program *program = new Program($1);
-                                      // if no errors, advance to next phase
-                                      if (ReportError::NumErrors() == 0)
-                                          program->Print(0);
+                                      program->BuildDecls();
+                                      program->TypeCheck();
                                     }
           ;
 

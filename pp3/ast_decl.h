@@ -17,10 +17,12 @@ class NamedType;
 class Identifier;
 class Stmt;
 
+// abstract
 class Decl : public Node
 {
   protected:
     Identifier *id;
+    const char *GetName() { return id->GetName(); }
 
   public:
     Decl(Identifier *name);
@@ -35,6 +37,7 @@ class VarDecl : public Decl
     VarDecl(Identifier *name, Type *type);
     const char *GetPrintNameForNode() { return "VarDecl"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class ClassDecl : public Decl
@@ -49,6 +52,8 @@ class ClassDecl : public Decl
               List<NamedType*> *implements, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "ClassDecl"; }
     void PrintChildren(int indentLevel);
+    bool CreatesNewScope() { return true; }
+    void BuildDecls();
 };
 
 class InterfaceDecl : public Decl
@@ -60,6 +65,8 @@ class InterfaceDecl : public Decl
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     const char *GetPrintNameForNode() { return "InterfaceDecl"; }
     void PrintChildren(int indentLevel);
+    bool CreatesNewScope() { return true; }
+    void BuildDecls();
 };
 
 class FnDecl : public Decl
@@ -74,6 +81,8 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     const char *GetPrintNameForNode() { return "FnDecl"; }
     void PrintChildren(int indentLevel);
+    bool CreatesNewScope() { return true; }
+    void BuildDecls();
 };
 
 #endif

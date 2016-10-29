@@ -6,6 +6,7 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include "ast_expr.h"
+#include "scope.h"
 
 
 Program::Program(List<Decl*> *d) {
@@ -16,6 +17,18 @@ Program::Program(List<Decl*> *d) {
 void Program::PrintChildren(int indentLevel) {
     decls->PrintAll(indentLevel+1);
     printf("\n");
+}
+
+void Program::BuildDecls() {
+    SetScope(Scope::globalScope);
+    for (int i = 0; i < decls->NumElements(); i++) {
+        Decl *d = decls->Nth(i);
+        d->BuildDecls();
+    }
+}
+
+void Program::TypeCheck() {
+    // TODO
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {

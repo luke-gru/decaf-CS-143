@@ -35,10 +35,13 @@
 #include <iostream>
 using namespace std;
 
+class Scope;
+
 class Node  {
   protected:
     yyltype *location;
     Node *parent;
+    Scope *scope;
 
   public:
     Node(yyltype loc);
@@ -51,6 +54,19 @@ class Node  {
     void Print(int indentLevel, const char *label = NULL);
     virtual const char* GetPrintNameForNode() { return "Node?"; }
     virtual void PrintChildren(int indentLevel) { }
+    void SetScope(Scope *s) { scope = s; }
+    Scope* GetScope() {
+        if (scope) {
+            return scope;
+        } else if (parent) {
+            return parent->GetScope();
+        } else {
+            return NULL;
+        }
+    }
+    virtual bool CreatesNewScope() { return false; }
+    virtual void BuildDecls() {}
+    virtual void TypeCheck() {}
 };
 
 
@@ -63,6 +79,7 @@ class Identifier : public Node
     Identifier(yyltype loc, const char *name);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     virtual void PrintChildren(int);
+    const char *GetName() { return name; }
 };
 
 
