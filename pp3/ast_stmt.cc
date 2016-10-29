@@ -42,10 +42,30 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+void StmtBlock::BuildDecls() {
+    Scope *curScope = GetScope();
+    Scope *blockScope = new Scope(curScope);
+    for (int i = 0; i < decls->NumElements(); i++) {
+        VarDecl *var = decls->Nth(i);
+        var->SetScope(blockScope);
+        var->BuildDecls();
+    }
+    for (int i = 0; i < stmts->NumElements(); i++) {
+        Stmt *stmt = stmts->Nth(i);
+        stmt->SetScope(blockScope);
+        stmt->BuildDecls();
+    }
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
+}
+
+void ConditionalStmt::BuildDecls() {
+    test->BuildDecls();
+    body->BuildDecls();
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
@@ -59,6 +79,18 @@ void ForStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     step->Print(indentLevel+1, "(step) ");
     body->Print(indentLevel+1, "(body) ");
+}
+
+void ForStmt::BuildDecls() {
+    Scope *curScope = GetScope();
+    Scope *forStepScope = new Scope(curScope);
+    init->SetScope(forStepScope);
+    init->BuildDecls();
+    test->SetScope(forStepScope);
+    test->BuildDecls();
+    step->SetScope(forStepScope);
+    step->BuildDecls();
+    body->BuildDecls();
 }
 
 void WhileStmt::PrintChildren(int indentLevel) {
@@ -76,6 +108,11 @@ void IfStmt::PrintChildren(int indentLevel) {
     test->Print(indentLevel+1, "(test) ");
     body->Print(indentLevel+1, "(then) ");
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
+}
+
+void IfStmt::BuildDecls() {
+    ConditionalStmt::BuildDecls();
+    elseBody->BuildDecls();
 }
 
 SwitchStmt::SwitchStmt(Expr *t, List<SwitchCase*> *c, SwitchCase *defaultC) {
@@ -108,6 +145,25 @@ void SwitchCase::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+void SwitchCase::BuildDecls() {
+    test->BuildDecls();
+    for (int i = 0; i < stmts->NumElements(); i++) {
+        Stmt *stmt = stmts->Nth(i);
+        stmt->BuildDecls();
+    }
+}
+
+void SwitchStmt::BuildDecls() {
+    test->BuildDecls();
+    for (int i = 0; i < cases->NumElements(); i++) {
+        SwitchCase *c = cases->Nth(i);
+        c->BuildDecls();
+    }
+    if (defaultCase) {
+        defaultCase->BuildDecls();
+    }
+}
+
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     Assert(e != NULL);
     (expr=e)->SetParent(this);
@@ -117,6 +173,10 @@ void ReturnStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
 }
 
+void ReturnStmt::BuildDecls() {
+    expr->BuildDecls();
+}
+
 PrintStmt::PrintStmt(List<Expr*> *a) {
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
@@ -124,4 +184,11 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
 
 void PrintStmt::PrintChildren(int indentLevel) {
     args->PrintAll(indentLevel+1, "(args) ");
+}
+
+void PrintStmt::BuildDecls() {
+    for (int i = 0; i < args->NumElements(); i++) {
+        Expr *arg = args->Nth(i);
+        arg->BuildDecls();
+    }
 }

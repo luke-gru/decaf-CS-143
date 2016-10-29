@@ -51,6 +51,7 @@ class StmtBlock : public Stmt
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
     bool CreatesNewScope() { return true; }
+    void BuildDecls();
 };
 
 
@@ -62,6 +63,7 @@ class ConditionalStmt : public Stmt
 
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
+    void BuildDecls();
 };
 
 class LoopStmt : public ConditionalStmt
@@ -80,6 +82,7 @@ class ForStmt : public LoopStmt
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     const char *GetPrintNameForNode() { return "ForStmt"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class WhileStmt : public LoopStmt
@@ -99,6 +102,7 @@ class IfStmt : public ConditionalStmt
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     const char *GetPrintNameForNode() { return "IfStmt"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class SwitchCase;
@@ -113,6 +117,7 @@ class SwitchStmt : public Stmt
     SwitchStmt(Expr *e, List<SwitchCase*> *c, SwitchCase *defaultCase);
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class IntConstant;
@@ -127,6 +132,7 @@ class SwitchCase : public Node
     SwitchCase(IntConstant *test, List<Stmt*> *stmts, bool isDefault);
     const char *GetPrintNameForNode() { return isDefault ?  "Default" : "Case"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class BreakStmt : public Stmt
@@ -145,6 +151,7 @@ class ReturnStmt : public Stmt
     ReturnStmt(yyltype loc, Expr *expr);
     const char *GetPrintNameForNode() { return "ReturnStmt"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 class PrintStmt : public Stmt
@@ -156,6 +163,7 @@ class PrintStmt : public Stmt
     PrintStmt(List<Expr*> *arguments);
     const char *GetPrintNameForNode() { return "PrintStmt"; }
     void PrintChildren(int indentLevel);
+    void BuildDecls();
 };
 
 
